@@ -2,7 +2,6 @@
 
 [![CI](https://github.com/anttiviljami/glob-json-path/workflows/CI/badge.svg)](https://github.com/anttiviljami/glob-json-path/actions?query=workflow%3ACI)
 [![npm version](https://img.shields.io/npm/v/glob-json-path.svg)](https://www.npmjs.com/package/glob-json-path)
-[![npm downloads](https://img.shields.io/npm/dw/glob-json-path)](https://www.npmjs.com/package/glob-json-path)
 [![bundle size](https://img.shields.io/bundlephobia/minzip/glob-json-path?label=gzip%20bundle)](https://bundlephobia.com/package/glob-json-path)
 [![License](http://img.shields.io/:license-mit-blue.svg)](https://github.com/anttiviljami/glob-json-path/blob/master/LICENSE)
 [![Buy me a coffee](https://img.shields.io/badge/donate-buy%20me%20a%20coffee-orange)](https://buymeacoff.ee/anttiviljami)
