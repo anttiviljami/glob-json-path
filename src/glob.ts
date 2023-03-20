@@ -8,7 +8,7 @@ export function globValues(globPattern: string, obj: any): any[] {
   return glob(globPattern, obj, "value");
 }
 
-export function glob(globPattern: string, obj: any, mode: 'path' | 'value'): any[] {
+export function glob(globPattern: string, obj: any, mode: "path" | "value"): any[] {
   const matcher = globToRegExp(globPattern, { globstar: true });
   const globByDepth = new Map();
 
@@ -19,7 +19,7 @@ export function glob(globPattern: string, obj: any, mode: 'path' | 'value'): any
       const currentPath = [...path, key];
       const value = obj[key];
       if (matcher.test(currentPath.join("."))) {
-        result.push(mode === 'path' ? currentPath.join(".") : value);
+        result.push(mode === "path" ? currentPath.join(".") : value);
       } else if (typeof value === "object") {
         if (globPattern.includes("**")) {
           // if the glob pattern contains **, we need to traverse all the way down
