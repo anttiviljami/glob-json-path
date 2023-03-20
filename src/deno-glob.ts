@@ -1,20 +1,7 @@
 // Copyright 2018-2023 the Deno authors. All rights reserved. MIT license.
 // This module is browser compatible.
 
-export interface GlobToRegExpOptions {
-  /** Globstar syntax.
-   * See https://www.linuxjournal.com/content/globstar-new-bash-globbing-option.
-   * If false, `**` is treated like `*`.
-   *
-   * @default {true}
-   */
-  globstar?: boolean;
-  /** Whether globstar should be case-insensitive. */
-  caseInsensitive?: boolean;
-}
-
 const regExpEscapeChars = ["!", "$", "(", ")", "*", "+", ".", "=", "?", "[", "\\", "^", "{", "|"];
-const rangeEscapeChars = ["-", "\\", "]"];
 
 /** Convert a glob string to a regular expression.
  *
@@ -27,7 +14,6 @@ const rangeEscapeChars = ["-", "\\", "]"];
  * - `\` - Escapes the next character
  *
  * Globstar syntax:
- * - Requires `{ globstar: true }`.
  * - `**` - Matches any number of any path segments.
  *     - Must comprise its entire path segment in the provided glob.
  * - See https://www.linuxjournal.com/content/globstar-new-bash-globbing-option.
@@ -42,10 +28,7 @@ const rangeEscapeChars = ["-", "\\", "]"];
  *   `?(foo|bar/baz)` is invalid. The separator will take precedence and the
  *   first segment ends with an unclosed group.
  */
-export function globToRegExp(
-  glob: string,
-  { globstar: globstarOption = true, caseInsensitive = false }: GlobToRegExpOptions = {}
-): RegExp {
+export function globToRegExp(glob: string): RegExp {
   if (glob == "") {
     return /(?!)/;
   }
@@ -126,12 +109,7 @@ export function globToRegExp(
           numStars++;
         }
         const nextChar = glob[i + 1];
-        if (
-          globstarOption &&
-          numStars == 2 &&
-          [...seps, undefined].includes(prevChar) &&
-          [...seps, undefined].includes(nextChar)
-        ) {
+        if (numStars == 2 && [...seps, undefined].includes(prevChar) && [...seps, undefined].includes(nextChar)) {
           segment += globstar;
           endsWithSep = true;
         } else {
@@ -170,6 +148,5 @@ export function globToRegExp(
     j = i;
   }
 
-  regExpString = `^${regExpString}$`;
-  return new RegExp(regExpString, caseInsensitive ? "i" : "");
+  return new RegExp(`^${regExpString}$`);
 }

@@ -9,7 +9,7 @@ export function globValues(globPattern: string, obj: any): any[] {
 }
 
 export function glob(globPattern: string, obj: any, mode: "path" | "value"): any[] {
-  const matcher = globToRegExp(globPattern, { globstar: true });
+  const matcher = globToRegExp(globPattern);
   const globByDepth = new Map();
 
   const result: any[] = [];
