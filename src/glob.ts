@@ -1,17 +1,25 @@
 import { globToRegExp } from "./deno-glob";
 
+export function globPaths(globPattern: string, obj: any): string[] {
+  return glob(globPattern, obj, "path");
+}
+
 export function globValues(globPattern: string, obj: any): any[] {
+  return glob(globPattern, obj, "value");
+}
+
+export function glob(globPattern: string, obj: any, mode: 'path' | 'value'): any[] {
   const matcher = globToRegExp(globPattern, { globstar: true });
   const globByDepth = new Map();
 
-  const values: any[] = [];
+  const result: any[] = [];
 
   function traverse(obj: any, path: string[]) {
     for (const key of Object.keys(obj)) {
       const currentPath = [...path, key];
       const value = obj[key];
       if (matcher.test(currentPath.join("."))) {
-        values.push(value);
+        result.push(mode === 'path' ? currentPath.join(".") : value);
       } else if (typeof value === "object") {
         if (globPattern.includes("**")) {
           // if the glob pattern contains **, we need to traverse all the way down
@@ -41,5 +49,5 @@ export function globValues(globPattern: string, obj: any): any[] {
 
   traverse(obj, []);
 
-  return values;
+  return result;
 }
