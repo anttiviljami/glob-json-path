@@ -41,7 +41,7 @@ globPaths("b?", { ab: 7, abc: 8, ba: 9, bc: 10 }); // ["ba", "bc"]
 
 ## Examples
 
-See [tests](https://github.com/anttiviljami/glob-json-path/blob/main/src/globValues.test.ts) for more use cases.
+See [tests](https://github.com/anttiviljami/glob-json-path/blob/main/src/glob.test.ts) for more use cases.
 
 ## Contributing
 
