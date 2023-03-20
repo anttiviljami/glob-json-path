@@ -13,24 +13,31 @@ npm i glob-json-path
 ```
 
 ```typescript
-import { globValues } from "glob-json-path";
+import { globValues, globPaths } from "glob-json-path";
 
 globValues("a.b", { a: { b: 1 }); // [1]
 globValues("a.b.c", { a: { b: { c: 1 } }); // [1]
 globValues("a.b", { a: { b: { c: 1 } }); // [{ c: 1 }]
 globValues("a.*", { a: { b: 2, c: 3 } }); // [2, 3]
 globValues("**.c", { a: { c: 4, b: { c: 5 } } }); // [4, 5]
-globValues("a*", { ab: 7, abc: 8, ba: 9, bc: 10 } }); // [7, 8]
-globValues("b?", { ab: 7, abc: 8, ba: 9, bc: 10 } }); // [9, 10]
+globValues("a*", { ab: 7, abc: 8, ba: 9, bc: 10 }); // [7, 8]
+globValues("b?", { ab: 7, abc: 8, ba: 9, bc: 10 }); // [9, 10]
+
+globPaths("a.*", { a: { b: 2, c: 3 } }); // ["a.b", "a.c"]
+globPaths("a.*.c", { a: { b: { c: 3 }, { d: { c: 3 }}}}); // ["a.b.c", "a.d.c"]
+globValues("**.c", { a: { c: 4, b: { c: 5 } } }); // ["a.c", "a.b.c"]
+globValues("a*", { ab: 7, abc: 8, ba: 9, bc: 10 }); // ["ab", "abc"]
+globValues("b?", { ab: 7, abc: 8, ba: 9, bc: 10 }); // ["ba", "bc"]
 ```
 
 ## Features
 
 - Zero dependencies. Tiny package size.
-- Borrows [globbing implementation from deno](https://github.com/anttiviljami/glob-json-path/blob/main/src/deno-glob.ts)
+- Return matching values or paths for bash-like globs
 - Support for wildcards `*`, `?`
 - Support for double wildcards `**` (deeply nesting)
 - Support for arrays and all JSON primitives
+- Borrows [globbing implementation from deno](https://github.com/anttiviljami/glob-json-path/blob/main/src/deno-glob.ts)
 
 ## Examples
 
