@@ -1,1 +1,1 @@
-export * from './globValues'
+export * from "./globValues";
