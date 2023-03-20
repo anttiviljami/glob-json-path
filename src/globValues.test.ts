@@ -41,8 +41,8 @@ describe("globValues", () => {
   it("should return deeply nested values with double wildcard", () => {
     expect(globValues("**.d", { a: { b: { d: 1, f: 2 }, c: { d: 3, f: 4 } } })).toEqual([1, 3]);
     expect(globValues("**.f", { a: { b: { d: 1, f: 2 }, c: { d: 3, f: 4 } } })).toEqual([2, 4]);
-    expect(globValues("a.**.d", { a: { b: { d: 1, f: 2 }, c: { d: 3, f: 4 } } })).toEqual([1, 3]);
-    expect(globValues("b.**.f", { a: { b: { d: 1, f: 2 }, c: { d: 3, f: 4 } } })).toEqual([]);
+    expect(globValues("a.**.d", { a: { b: { d: 1, f: 2 }, c: { d: 3, f: { d: 4 } } } })).toEqual([1, 3, 4]);
+    expect(globValues("z.**.f", { a: { b: { d: 1, f: 2 }, c: { d: 3, f: { d: 4 } } } })).toEqual([]);
   });
 
   it("should return values using wildcard attributes", () => {

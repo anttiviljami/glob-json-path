@@ -26,7 +26,8 @@ globValues("b?", { ab: 7, abc: 8, ba: 9, bc: 10 } }); // [9, 10]
 
 ## Features
 
-- Zero dependencies. Tiny bundle size.
+- Zero dependencies. Tiny package size.
+- Borrows [globbing implementation from deno](https://github.com/anttiviljami/glob-json-path/blob/main/src/deno-glob.ts)
 - Support for wildcards `*`, `?`
 - Support for double wildcards `**` (deeply nesting)
 - Support for arrays and all JSON primitives

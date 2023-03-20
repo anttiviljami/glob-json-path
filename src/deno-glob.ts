@@ -2,12 +2,6 @@
 // This module is browser compatible.
 
 export interface GlobToRegExpOptions {
-  /** Extended glob syntax.
-   * See https://www.linuxjournal.com/content/bash-extended-globbing.
-   *
-   * @default {true}
-   */
-  extended?: boolean;
   /** Globstar syntax.
    * See https://www.linuxjournal.com/content/globstar-new-bash-globbing-option.
    * If false, `**` is treated like `*`.
@@ -38,19 +32,7 @@ const rangeEscapeChars = ["-", "\\", "]"];
  *     - `[[:digit:]abc]` - Matches any digit, `a`, `b` or `c`.
  *     - See https://facelessuser.github.io/wcmatch/glob/#posix-character-classes
  *       for a complete list of supported character classes.
- * - `\` - Escapes the next character for an `os` other than `"windows"`.
- * - \` - Escapes the next character for `os` set to `"windows"`.
- * - `/` - Path separator.
- * - `\` - Additional path separator only for `os` set to `"windows"`.
- *
- * Extended syntax:
- * - Requires `{ extended: true }`.
- * - `?(foo|bar)` - Matches 0 or 1 instance of `{foo,bar}`.
- * - `@(foo|bar)` - Matches 1 instance of `{foo,bar}`. They behave the same.
- * - `*(foo|bar)` - Matches _n_ instances of `{foo,bar}`.
- * - `+(foo|bar)` - Matches _n > 0_ instances of `{foo,bar}`.
- * - `!(foo|bar)` - Matches anything other than `{foo,bar}`.
- * - See https://www.linuxjournal.com/content/bash-extended-globbing.
+ * - `\` - Escapes the next character
  *
  * Globstar syntax:
  * - Requires `{ globstar: true }`.
@@ -79,7 +61,7 @@ const rangeEscapeChars = ["-", "\\", "]"];
  *   the group occurs not nested at the end of the segment. */
 export function globToRegExp(
   glob: string,
-  { extended = true, globstar: globstarOption = true, caseInsensitive = false }: GlobToRegExpOptions = {}
+  { globstar: globstarOption = true, caseInsensitive = false }: GlobToRegExpOptions = {}
 ): RegExp {
   if (glob == "") {
     return /(?!)/;
@@ -194,35 +176,8 @@ export function globToRegExp(
         continue;
       }
 
-      if (glob[i] == "+" && extended && glob[i + 1] == "(") {
-        i++;
-        groupStack.push("+");
-        segment += "(?:";
-        continue;
-      }
-
-      if (glob[i] == "@" && extended && glob[i + 1] == "(") {
-        i++;
-        groupStack.push("@");
-        segment += "(?:";
-        continue;
-      }
-
       if (glob[i] == "?") {
-        if (extended && glob[i + 1] == "(") {
-          i++;
-          groupStack.push("?");
-          segment += "(?:";
-        } else {
-          segment += ".";
-        }
-        continue;
-      }
-
-      if (glob[i] == "!" && extended && glob[i + 1] == "(") {
-        i++;
-        groupStack.push("!");
-        segment += "(?!";
+        segment += ".";
         continue;
       }
 
@@ -244,29 +199,23 @@ export function globToRegExp(
       }
 
       if (glob[i] == "*") {
-        if (extended && glob[i + 1] == "(") {
+        const prevChar = glob[i - 1];
+        let numStars = 1;
+        while (glob[i + 1] == "*") {
           i++;
-          groupStack.push("*");
-          segment += "(?:";
+          numStars++;
+        }
+        const nextChar = glob[i + 1];
+        if (
+          globstarOption &&
+          numStars == 2 &&
+          [...seps, undefined].includes(prevChar) &&
+          [...seps, undefined].includes(nextChar)
+        ) {
+          segment += globstar;
+          endsWithSep = true;
         } else {
-          const prevChar = glob[i - 1];
-          let numStars = 1;
-          while (glob[i + 1] == "*") {
-            i++;
-            numStars++;
-          }
-          const nextChar = glob[i + 1];
-          if (
-            globstarOption &&
-            numStars == 2 &&
-            [...seps, undefined].includes(prevChar) &&
-            [...seps, undefined].includes(nextChar)
-          ) {
-            segment += globstar;
-            endsWithSep = true;
-          } else {
-            segment += wildcard;
-          }
+          segment += wildcard;
         }
         continue;
       }
