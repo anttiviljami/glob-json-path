@@ -24,14 +24,6 @@ const rangeEscapeChars = ["-", "\\", "]"];
  * - `*` - Matches everything without leaving the path segment.
  * - `?` - Matches any single character.
  * - `{foo,bar}` - Matches `foo` or `bar`.
- * - `[abcd]` - Matches `a`, `b`, `c` or `d`.
- * - `[a-d]` - Matches `a`, `b`, `c` or `d`.
- * - `[!abcd]` - Matches any single character besides `a`, `b`, `c` or `d`.
- * - `[[:<class>:]]` - Matches any character belonging to `<class>`.
- *     - `[[:alnum:]]` - Matches any digit or letter.
- *     - `[[:digit:]abc]` - Matches any digit, `a`, `b` or `c`.
- *     - See https://facelessuser.github.io/wcmatch/glob/#posix-character-classes
- *       for a complete list of supported character classes.
  * - `\` - Escapes the next character
  *
  * Globstar syntax:
@@ -49,16 +41,7 @@ const rangeEscapeChars = ["-", "\\", "]"];
  * - Any special glob syntax must be contained to one path segment. For example,
  *   `?(foo|bar/baz)` is invalid. The separator will take precedence and the
  *   first segment ends with an unclosed group.
- * - If a path segment ends with unclosed groups or a dangling escape prefix, a
- *   parse error has occurred. Every character for that segment is taken
- *   literally in this event.
- *
- * Limitations:
- * - A negative group like `!(foo|bar)` will wrongly be converted to a negative
- *   look-ahead followed by a wildcard. This means that `!(foo).js` will wrongly
- *   fail to match `foobar.js`, even though `foobar` is not `foo`. Effectively,
- *   `!(foo|bar)` is treated like `!(@(foo|bar)*)`. This will work correctly if
- *   the group occurs not nested at the end of the segment. */
+ */
 export function globToRegExp(
   glob: string,
   { globstar: globstarOption = true, caseInsensitive = false }: GlobToRegExpOptions = {}
@@ -67,17 +50,12 @@ export function globToRegExp(
     return /(?!)/;
   }
 
-  const sep = "/+";
-  const sepMaybe = "/*";
-  const seps = ["/"];
-  const globstar = "(?:[^/]*(?:/|$)+)*";
-  const wildcard = "[^/]*";
+  const sep = "\.+";
+  const sepMaybe = "\.*";
+  const seps = ["."];
+  const globstar = "(?:[^\.]*(?:\.|$)+)*";
+  const wildcard = "[^\.]*";
   const escapePrefix = "\\";
-
-  // Remove trailing separators.
-  let newLength = glob.length;
-  for (; newLength > 1 && seps.includes(glob[newLength - 1]); newLength--);
-  glob = glob.slice(0, newLength);
 
   let regExpString = "";
 
@@ -85,7 +63,6 @@ export function globToRegExp(
   for (let j = 0; j < glob.length; ) {
     let segment = "";
     const groupStack: string[] = [];
-    let inRange = false;
     let inEscape = false;
     let endsWithSep = false;
     let i = j;
@@ -94,69 +71,12 @@ export function globToRegExp(
     for (; i < glob.length && !seps.includes(glob[i]); i++) {
       if (inEscape) {
         inEscape = false;
-        const escapeChars = inRange ? rangeEscapeChars : regExpEscapeChars;
-        segment += escapeChars.includes(glob[i]) ? `\\${glob[i]}` : glob[i];
+        segment += regExpEscapeChars.includes(glob[i]) ? `\\${glob[i]}` : glob[i];
         continue;
       }
 
       if (glob[i] == escapePrefix) {
         inEscape = true;
-        continue;
-      }
-
-      if (glob[i] == "[") {
-        if (!inRange) {
-          inRange = true;
-          segment += "[";
-          if (glob[i + 1] == "!") {
-            i++;
-            segment += "^";
-          } else if (glob[i + 1] == "^") {
-            i++;
-            segment += "\\^";
-          }
-          continue;
-        } else if (glob[i + 1] == ":") {
-          let k = i + 1;
-          let value = "";
-          while (glob[k + 1] != null && glob[k + 1] != ":") {
-            value += glob[k + 1];
-            k++;
-          }
-          if (glob[k + 1] == ":" && glob[k + 2] == "]") {
-            i = k + 2;
-            if (value == "alnum") segment += "\\dA-Za-z";
-            else if (value == "alpha") segment += "A-Za-z";
-            else if (value == "ascii") segment += "\x00-\x7F";
-            else if (value == "blank") segment += "\t ";
-            else if (value == "cntrl") segment += "\x00-\x1F\x7F";
-            else if (value == "digit") segment += "\\d";
-            else if (value == "graph") segment += "\x21-\x7E";
-            else if (value == "lower") segment += "a-z";
-            else if (value == "print") segment += "\x20-\x7E";
-            else if (value == "punct") {
-              segment += "!\"#$%&'()*+,\\-./:;<=>?@[\\\\\\]^_‘{|}~";
-            } else if (value == "space") segment += "\\s\v";
-            else if (value == "upper") segment += "A-Z";
-            else if (value == "word") segment += "\\w";
-            else if (value == "xdigit") segment += "\\dA-Fa-f";
-            continue;
-          }
-        }
-      }
-
-      if (glob[i] == "]" && inRange) {
-        inRange = false;
-        segment += "]";
-        continue;
-      }
-
-      if (inRange) {
-        if (glob[i] == "\\") {
-          segment += `\\\\`;
-        } else {
-          segment += glob[i];
-        }
         continue;
       }
 
@@ -224,7 +144,7 @@ export function globToRegExp(
     }
 
     // Check for unclosed groups or a dangling backslash.
-    if (groupStack.length > 0 || inRange || inEscape) {
+    if (groupStack.length > 0 || inEscape) {
       // Parse failure. Take all characters from this segment literally.
       segment = "";
       // @ts-ignore

@@ -35,7 +35,7 @@ globPaths("b?", { ab: 7, abc: 8, ba: 9, bc: 10 }); // ["ba", "bc"]
 - Zero dependencies. Tiny package size.
 - Return matching values or paths for bash-like globs
 - Support for wildcards `*`, `?`
-- Support for double wildcards `**` (deeply nesting)
+- Support for double wildcards `**` (globstar)
 - Support for arrays and all JSON primitives
 - Borrows [globbing implementation from deno](https://github.com/anttiviljami/glob-json-path/blob/main/src/deno-glob.ts)
 

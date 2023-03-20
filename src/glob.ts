@@ -22,7 +22,7 @@ export function glob(globPattern: string, obj: any, mode: "path" | "value"): any
         result.push(mode === "path" ? currentPath.join(".") : value);
       } else if (typeof value === "object") {
         if (globPattern.includes("**")) {
-          // if the glob pattern contains **, we need to traverse all the way down
+          // if the glob pattern contains the globstar **, we need to traverse all the way down
           traverse(value, currentPath);
           continue;
         }
