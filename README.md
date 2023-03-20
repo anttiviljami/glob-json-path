@@ -25,9 +25,9 @@ globValues("b?", { ab: 7, abc: 8, ba: 9, bc: 10 }); // [9, 10]
 
 globPaths("a.*", { a: { b: 2, c: 3 } }); // ["a.b", "a.c"]
 globPaths("a.*.c", { a: { b: { c: 3 }, { d: { c: 3 }}}}); // ["a.b.c", "a.d.c"]
-globValues("**.c", { a: { c: 4, b: { c: 5 } } }); // ["a.c", "a.b.c"]
-globValues("a*", { ab: 7, abc: 8, ba: 9, bc: 10 }); // ["ab", "abc"]
-globValues("b?", { ab: 7, abc: 8, ba: 9, bc: 10 }); // ["ba", "bc"]
+globPaths("**.c", { a: { c: 4, b: { c: 5 } } }); // ["a.c", "a.b.c"]
+globPaths("a*", { ab: 7, abc: 8, ba: 9, bc: 10 }); // ["ab", "abc"]
+globPaths("b?", { ab: 7, abc: 8, ba: 9, bc: 10 }); // ["ba", "bc"]
 ```
 
 ## Features
