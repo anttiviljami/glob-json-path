@@ -1,6 +1,6 @@
 {
   "name": "glob-json-path",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "author": "Viljami Kuosmanen <viljami@viljami.io>",
   "license": "MIT",
   "description": "Bash-like globbing for JSON objects.",
