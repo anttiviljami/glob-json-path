@@ -50,11 +50,11 @@ export function globToRegExp(
     return /(?!)/;
   }
 
-  const sep = "\.+";
-  const sepMaybe = "\.*";
+  const sep = ".+";
+  const sepMaybe = ".*";
   const seps = ["."];
-  const globstar = "(?:[^\.]*(?:\.|$)+)*";
-  const wildcard = "[^\.]*";
+  const globstar = "(?:[^.]*(?:.|$)+)*";
+  const wildcard = "[^.]*";
   const escapePrefix = "\\";
 
   let regExpString = "";
