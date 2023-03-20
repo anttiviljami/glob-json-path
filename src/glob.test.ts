@@ -25,6 +25,7 @@ describe("globValues", () => {
 
   it("should return matched object properties with wildcard", () => {
     expect(globValues("*", { a: 1, b: 2, c: 3 })).toEqual([1, 2, 3]);
+    expect(globValues("a.*.c", { a: [{ b: 1, c: 2 }, { c: 3 }] })).toEqual([2, 3]);
   });
 
   it("should return matched array items with wildcard", () => {
@@ -58,16 +59,17 @@ describe("globPaths", () => {
 
   it("should return matched array indices with wildcard", () => {
     expect(globPaths("*", [1, 2, 3])).toEqual(["0", "1", "2"]);
+    expect(globPaths("a.*.c", { a: [{ b: 1, c: 2 }, { c: 3 }] })).toEqual(["a.0.c", "a.1.c"]);
   });
 
-  it("should return nested values with wildcard", () => {
+  it("should return nested paths with wildcard", () => {
     expect(globPaths("a.*.d", { a: { b: { d: 1, f: 2 }, c: { d: 3, f: 4 } } })).toEqual(["a.b.d", "a.c.d"]);
     expect(globPaths("a.*.f", { a: { b: { d: 1, f: 2 }, c: { d: 3, f: 4 } } })).toEqual(["a.b.f", "a.c.f"]);
     expect(globPaths("a.b.*", { a: { b: { d: 1, f: 2 }, c: { d: 3, f: 4 } } })).toEqual(["a.b.d", "a.b.f"]);
     expect(globPaths("a.c.*", { a: { b: { d: 1, f: 2 }, c: { d: 3, f: 4 } } })).toEqual(["a.c.d", "a.c.f"]);
   });
 
-  it("should return deeply nested values with double wildcard", () => {
+  it("should return deeply nested paths with double wildcard", () => {
     expect(globPaths("**.d", { a: { b: { d: 1, f: 2 }, c: { d: 3, f: 4 } } })).toEqual(["a.b.d", "a.c.d"]);
     expect(globPaths("**.f", { a: { b: { d: 1, f: 2 }, c: { d: 3, f: 4 } } })).toEqual(["a.b.f", "a.c.f"]);
     expect(globPaths("a.**.d", { a: { b: { d: 1, f: 2 }, c: { d: 3, f: { d: 4 } } } })).toEqual([
@@ -78,7 +80,7 @@ describe("globPaths", () => {
     expect(globPaths("z.**.f", { a: { b: { d: 1, f: 2 }, c: { d: 3, f: { d: 4 } } } })).toEqual([]);
   });
 
-  it("should return values using wildcard attributes", () => {
+  it("should return paths using wildcard properties", () => {
     expect(globPaths("a*", { abc: 7, ab: 8, ba: 9, bc: 10 })).toEqual(["abc", "ab"]);
     expect(globPaths("b?", { abc: 7, ab: 8, ba: 9, bc: 10 })).toEqual(["ba", "bc"]);
   });

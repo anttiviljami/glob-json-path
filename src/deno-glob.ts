@@ -10,7 +10,6 @@ const regExpEscapeChars = ["!", "$", "(", ")", "*", "+", ".", "=", "?", "[", "\\
  * Basic glob syntax:
  * - `*` - Matches everything without leaving the path segment.
  * - `?` - Matches any single character.
- * - `{foo,bar}` - Matches `foo` or `bar`.
  * - `\` - Escapes the next character
  *
  * Globstar syntax:
@@ -63,41 +62,8 @@ export function globToRegExp(glob: string): RegExp {
         continue;
       }
 
-      if (glob[i] == ")" && groupStack.length > 0 && groupStack[groupStack.length - 1] != "BRACE") {
-        segment += ")";
-        const type = groupStack.pop()!;
-        if (type == "!") {
-          segment += wildcard;
-        } else if (type != "@") {
-          segment += type;
-        }
-        continue;
-      }
-
-      if (glob[i] == "|" && groupStack.length > 0 && groupStack[groupStack.length - 1] != "BRACE") {
-        segment += "|";
-        continue;
-      }
-
       if (glob[i] == "?") {
         segment += ".";
-        continue;
-      }
-
-      if (glob[i] == "{") {
-        groupStack.push("BRACE");
-        segment += "(?:";
-        continue;
-      }
-
-      if (glob[i] == "}" && groupStack[groupStack.length - 1] == "BRACE") {
-        groupStack.pop();
-        segment += ")";
-        continue;
-      }
-
-      if (glob[i] == "," && groupStack[groupStack.length - 1] == "BRACE") {
-        segment += "|";
         continue;
       }
 
