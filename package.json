@@ -12,7 +12,7 @@
   "scripts": {
     "test": "jest",
     "build": "swc src/ -d . --config-file .swcrc",
-    "types": "tsc --declaration --outDir . src/index.ts",
+    "types": "tsc --esModuleInterop --declaration --outDir . src/index.ts",
     "prepublishOnly": "npm run build && npm run types -- --emitDeclarationOnly",
     "prettier": "prettier --write \"**/*.{ts,json,md}\"",
     "lint": "prettier --check \"**/*.{ts,json,md}\"",

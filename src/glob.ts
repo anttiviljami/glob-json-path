@@ -1,4 +1,4 @@
-import * as globToRegExp from "glob-to-regexp";
+import globToRegExp from "glob-to-regexp";
 
 // import { globToRegExp } from './deno-glob';
 
