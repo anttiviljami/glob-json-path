@@ -39,7 +39,7 @@ globPaths("b?", { ab: 7, abc: 8, ba: 9, bc: 10 }); // ["ba", "bc"]
 - Support for wildcards `*`, `?`
 - Support for double wildcards `**` (globstar)
 - Support for arrays and all JSON primitives
-- Relies on [glob-to-regexp](https://www.npmjs.com/package/glob-to-regexp) package for converting globs to regex. 
+- Relies on [glob-to-regexp](https://www.npmjs.com/package/glob-to-regexp) package for converting globs to regex.
 
 ## Examples
 

@@ -48,24 +48,22 @@ describe("globValues", () => {
 
   it("should return values using wildcard attributes", () => {
     expect(globValues("a*", { ab: 7, ac: 8, ba: 9, bc: 10 })).toEqual([7, 8]);
-
   });
 
   it("should return values using single character matcher attribute", () => {
     expect(globValues("b?", { ab: 7, ac: 8, ba: 9, bc: 10 })).toEqual([9, 10]);
-  })
-
+  });
 
   it("should return values using double wildcard attributes", () => {
     const obj = {
       wrapper: {
         inner: [
           {
-            id: 'id-1'
+            id: "id-1",
           },
         ],
-      }
-    }
+      },
+    };
 
     expect(globValues("**.inner.*.id", obj)).toEqual(["id-1"]);
   });
@@ -74,16 +72,13 @@ describe("globValues", () => {
     const obj = {
       inner: [
         {
-          id: 'id-1'
+          id: "id-1",
         },
       ],
-
-    }
+    };
 
     expect(globValues("**.inner.*.id", obj)).toEqual(["id-1"]);
   });
-
-
 });
 
 describe("globPaths", () => {

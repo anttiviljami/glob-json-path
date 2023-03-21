@@ -1,16 +1,16 @@
-import globToRegExp from 'glob-to-regexp';
+import globToRegExp from "glob-to-regexp";
 
 // import { globToRegExp } from './deno-glob';
 
 export function globPaths(globPattern: string, obj: any): string[] {
-  return glob(globPattern, obj, 'path');
+  return glob(globPattern, obj, "path");
 }
 
 export function globValues(globPattern: string, obj: any): any[] {
-  return glob(globPattern, obj, 'value');
+  return glob(globPattern, obj, "value");
 }
 
-export function glob(globPattern: string, obj: any, mode: 'path' | 'value'): any[] {
+export function glob(globPattern: string, obj: any, mode: "path" | "value"): any[] {
   const objectPatchMatcher = toPathRegex(globPattern);
   const globByDepth = new Map();
 
@@ -21,9 +21,9 @@ export function glob(globPattern: string, obj: any, mode: 'path' | 'value'): any
       const currentPath = [...path, key];
       const value = obj[key];
       if (objectPathMatches(objectPatchMatcher, currentPath)) {
-        result.push(mode === 'path' ? currentPath.join('.') : value);
-      } else if (typeof value === 'object') {
-        if (globPattern.includes('**')) {
+        result.push(mode === "path" ? currentPath.join(".") : value);
+      } else if (typeof value === "object") {
+        if (globPattern.includes("**")) {
           // if the glob pattern contains the globstar **, we need to traverse all the way down
           traverse(value, currentPath);
           continue;
@@ -34,13 +34,13 @@ export function glob(globPattern: string, obj: any, mode: 'path' | 'value'): any
         if (!partialMatcher) {
           partialMatcher = toPathRegex(
             globPattern
-              .split('.')
+              .split(".")
               .slice(0, path.length + 1)
-              .join('.'),
+              .join(".")
           );
           globByDepth.set(path.length, partialMatcher);
         }
-        const isPartialMatch = partialMatcher.test(currentPath.join('/'));
+        const isPartialMatch = partialMatcher.test(currentPath.join("/"));
 
         if (isPartialMatch) {
           traverse(value, currentPath);
@@ -55,13 +55,13 @@ export function glob(globPattern: string, obj: any, mode: 'path' | 'value'): any
 }
 
 const objectPathMatches = (pathGlob: RegExp, paths: string[]) => {
-  const path = paths.join('/');
+  const path = paths.join("/");
 
   return pathGlob.test(path);
 };
 
 const toPathRegex = (glob: string) => {
-  const pathGlob = glob.split('.').join('/') // replace all dots with slashes
+  const pathGlob = glob.split(".").join("/"); // replace all dots with slashes
 
-  return globToRegExp(pathGlob, { extended: true, globstar: true});
+  return globToRegExp(pathGlob, { extended: true, globstar: true });
 };
