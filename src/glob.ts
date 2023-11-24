@@ -54,7 +54,7 @@ export function glob(globPattern: string, obj: any, mode: "path" | "value"): any
   return result;
 }
 
-const objectPathMatches = (pathGlob: ReturnType<(typeof minimatch)["makeRe"]>, paths: string[]) => {
+const objectPathMatches = (pathGlob: RegExp | boolean, paths: string[]) => {
   const path = paths.join("/");
 
   return typeof pathGlob !== "boolean" ? pathGlob.test(path) : false;
