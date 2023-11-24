@@ -1,4 +1,4 @@
-import micromatch from "micromatch";
+import { minimatch } from "minimatch";
 
 export function globPaths(globPattern: string, obj: any): string[] {
   return glob(globPattern, obj, "path");
@@ -40,7 +40,7 @@ export function glob(globPattern: string, obj: any, mode: "path" | "value"): any
           );
           globByDepth.set(path.length, partialMatcher);
         }
-        const isPartialMatch = partialMatcher(currentPath.join("/"));
+        const isPartialMatch = typeof partialMatcher !== "boolean" ? partialMatcher.test(currentPath.join("/")) : false;
 
         if (isPartialMatch) {
           traverse(value, currentPath);
@@ -54,14 +54,14 @@ export function glob(globPattern: string, obj: any, mode: "path" | "value"): any
   return result;
 }
 
-const objectPathMatches = (pathGlob: ReturnType<micromatch.matcher>, paths: string[]) => {
+const objectPathMatches = (pathGlob: ReturnType<(typeof minimatch)["makeRe"]>, paths: string[]) => {
   const path = paths.join("/");
 
-  return pathGlob(path);
+  return typeof pathGlob !== "boolean" ? pathGlob.test(path) : false;
 };
 
 const toPathRegex = (glob: string) => {
   const pathGlob = glob.split(".").join("/"); // replace all dots with slashes
 
-  return micromatch.matcher(pathGlob, { dot: true, star: true });
+  return minimatch.makeRe(pathGlob, { dot: true, noglobstar: false });
 };
