@@ -4,7 +4,7 @@
     "parser": {
       "syntax": "typescript"
     },
-    "target": "es5"
+    "target": "es2015"
   },
   "module": {
     "type": "commonjs"
