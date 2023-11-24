@@ -35,7 +35,7 @@ export function glob(globPattern: string, obj: any, mode: "path" | "value"): any
         if (globStarDepth !== -1 && currentPath.length >= globStarDepth) {
           traverse(obj[key], currentPath);
           continue;
-        } 
+        }
 
         // don't traverse if the path doesn't match partially
         let partialMatcher = globByDepth.get(path.length);
