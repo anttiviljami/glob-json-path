@@ -16,7 +16,8 @@
     "prepublishOnly": "npm run build && npm run types -- --emitDeclarationOnly",
     "prettier": "prettier --write \"**/*.{ts,json,md}\"",
     "lint": "prettier --check \"**/*.{ts,json,md}\"",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "benchmark": "node benchmarks/run.js"
   },
   "files": [
     "*.js",

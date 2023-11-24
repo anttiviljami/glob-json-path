@@ -10,6 +10,10 @@ export function globValues(globPattern: string, obj: any): any[] {
 
 export function glob(globPattern: string, obj: any, mode: "path" | "value"): any[] {
   const objectPatchMatcher = toPathRegex(globPattern);
+  
+  const globPatternParts = globPattern.split(".");
+
+  // cache partial matchers by depth
   const globByDepth = new Map();
 
   const result: any[] = [];
@@ -23,7 +27,9 @@ export function glob(globPattern: string, obj: any, mode: "path" | "value"): any
       if (objectPathMatches(objectPatchMatcher, currentPath)) {
         result.push(mode === "path" ? currentPath.join(".") : value);
       } else if (typeof value === "object" && value !== null) {
-        if (globPattern.includes("**")) {
+        // to avoid expensive string operations
+        const globPatternAtDepth = globPatternParts.slice(0, currentPath.length);
+        if (globPatternAtDepth.includes("**")) {
           // if the glob pattern contains the globstar **, we need to traverse all the way down
           traverse(value, currentPath);
           continue;
@@ -32,12 +38,7 @@ export function glob(globPattern: string, obj: any, mode: "path" | "value"): any
         // don't traverse if the path doesn't match partially
         let partialMatcher = globByDepth.get(path.length);
         if (!partialMatcher) {
-          partialMatcher = toPathRegex(
-            globPattern
-              .split(".")
-              .slice(0, path.length + 1)
-              .join(".")
-          );
+          partialMatcher = toPathRegex(globPatternAtDepth.join("."));
           globByDepth.set(path.length, partialMatcher);
         }
         const isPartialMatch = typeof partialMatcher !== "boolean" ? partialMatcher.test(currentPath.join("/")) : false;
