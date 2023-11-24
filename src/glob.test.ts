@@ -113,4 +113,8 @@ describe("globPaths", () => {
     expect(globPaths("a*", { abc: 7, ab: 8, ba: 9, bc: 10 })).toEqual(["abc", "ab"]);
     expect(globPaths("b?", { abc: 7, ab: 8, ba: 9, bc: 10 })).toEqual(["ba", "bc"]);
   });
+
+  it.each([null, { boom: null }])("should not blow up on null or undefined objects", (obj) => {
+    expect(globPaths("**.ba", obj)).toEqual([]);
+  })
 });
