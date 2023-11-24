@@ -1,4 +1,4 @@
-import { minimatch } from "minimatch";
+const minimatch = require("minimatch");
 
 export function globPaths(globPattern: string, obj: any): string[] {
   return glob(globPattern, obj, "path");
