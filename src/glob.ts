@@ -17,12 +17,14 @@ export function glob(globPattern: string, obj: any, mode: "path" | "value"): any
   const result: any[] = [];
 
   function traverse(obj: any, path: string[]) {
+    if (!obj) return result;
+
     for (const key of Object.keys(obj)) {
       const currentPath = [...path, key];
       const value = obj[key];
       if (objectPathMatches(objectPatchMatcher, currentPath)) {
         result.push(mode === "path" ? currentPath.join(".") : value);
-      } else if (typeof value === "object") {
+      } else if (typeof value === "object" && value !== null) {
         if (globPattern.includes("**")) {
           // if the glob pattern contains the globstar **, we need to traverse all the way down
           traverse(value, currentPath);
