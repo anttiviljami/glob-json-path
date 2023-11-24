@@ -4,7 +4,7 @@ const assert = require('assert')
 const { glob } = require('..')
 
 // create a large nested object
-// { prop0: { value: 0, nested: { value: 1, nested: { value: 2, ... } }, prop1: ... }
+// { prop0: { value0: 0, nested0: { value1: 1, nested1: { value2: 2, ... } }, prop1: ... }
 const obj = {}
 
 // 1000 props
@@ -13,8 +13,8 @@ for (let i = 0; i < 1000; i++) {
   obj[`prop${i}`] = { 'value': i }
   tmp = obj[`prop${i}`]
   for (let j = 0; j < 100; j++) {
-    tmp['nested'] = { 'value': j }
-    tmp = tmp['nested']
+    tmp[`nested${j}`] = { [`value${j}`]: j }
+    tmp = tmp[`nested${j}`]
   }
 }
 // console.log(obj)
@@ -25,7 +25,7 @@ console.time('simple')
 performance.mark('start-simple')
 
 for (let i = 0; i < 10_000; i++) {
-  result = glob('prop0.nested.value', obj, 'value')
+  result = glob('prop0.nested0.value0', obj, 'value')
 }
 
 performance.mark('end-simple')
@@ -52,19 +52,17 @@ console.time('globstar')
 performance.mark('start-globstar')
 
 for (let i = 0; i < 100; i++) {
-  result = glob('**.value', obj, 'path')
+  result = glob('**.value1', obj, 'path')
 }
 
 performance.mark('end-globstar')
 console.timeEnd('globstar')
 
-assert.ok(result.includes('prop0.value'))
-assert.ok(result.includes('prop0.nested.value'))
-assert.ok(result.includes('prop1.value'))
-assert.ok(result.includes('prop1.nested.value'))
-assert.ok(result.includes('prop2.nested.nested.nested.value'))
-assert.ok(result.includes(`prop0${'.nested'.repeat(99)}.value`))
-assert.ok(result.includes('prop999.nested.value'))
+assert.ok(result.includes('prop0.nested0.nested1.value1'))
+assert.ok(result.includes('prop1.nested0.nested1.value1'))
+assert.ok(result.includes('prop2.nested0.nested1.value1'))
+assert.ok(result.includes('prop3.nested0.nested1.value1'))
+assert.ok(result.includes('prop999.nested0.nested1.value1'))
 
 console.log(
   '\n',
