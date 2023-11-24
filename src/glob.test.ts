@@ -116,5 +116,5 @@ describe("globPaths", () => {
 
   it.each([null, { boom: null }])("should not blow up on null or undefined objects", (obj) => {
     expect(globPaths("**.ba", obj)).toEqual([]);
-  })
+  });
 });
