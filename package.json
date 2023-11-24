@@ -10,7 +10,7 @@
   "homepage": "https://github.com/anttiviljami/glob-json-path#readme",
   "main": "index.js",
   "scripts": {
-    "test": "jest",
+    "test": "jest src/",
     "build": "swc src/ -d . --config-file .swcrc",
     "types": "tsc --esModuleInterop --declaration --outDir . src/index.ts",
     "prepublishOnly": "npm run build && npm run types -- --emitDeclarationOnly",
