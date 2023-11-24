@@ -10,7 +10,7 @@ export function globValues(globPattern: string, obj: any): any[] {
 
 export function glob(globPattern: string, obj: any, mode: "path" | "value"): any[] {
   const objectPatchMatcher = toPathRegex(globPattern);
-  
+
   const globPatternParts = globPattern.split(".");
 
   // cache partial matchers by depth
