@@ -1,4 +1,6 @@
-import micromatch from "micromatch";
+import globToRegExp from "glob-to-regexp";
+
+// import { globToRegExp } from './deno-glob';
 
 export function globPaths(globPattern: string, obj: any): string[] {
   return glob(globPattern, obj, "path");
@@ -40,7 +42,7 @@ export function glob(globPattern: string, obj: any, mode: "path" | "value"): any
           );
           globByDepth.set(path.length, partialMatcher);
         }
-        const isPartialMatch = partialMatcher(currentPath.join("/"));
+        const isPartialMatch = partialMatcher.test(currentPath.join("/"));
 
         if (isPartialMatch) {
           traverse(value, currentPath);
@@ -54,14 +56,14 @@ export function glob(globPattern: string, obj: any, mode: "path" | "value"): any
   return result;
 }
 
-const objectPathMatches = (pathGlob: ReturnType<micromatch.matcher>, paths: string[]) => {
+const objectPathMatches = (pathGlob: RegExp, paths: string[]) => {
   const path = paths.join("/");
 
-  return pathGlob(path);
+  return pathGlob.test(path);
 };
 
 const toPathRegex = (glob: string) => {
   const pathGlob = glob.split(".").join("/"); // replace all dots with slashes
 
-  return micromatch.matcher(pathGlob, { dot: true, star: true });
+  return globToRegExp(pathGlob, { extended: true, globstar: true });
 };
