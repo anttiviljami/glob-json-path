@@ -6,7 +6,7 @@
     "rootDir": "src",
     "declaration": true,
     "esModuleInterop": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
   },
-  "exclude": ["node_modules/", "dist", "src/**/*.test.ts"]
+  "exclude": ["node_modules/", "dist", "src/**/*.test.ts", "jest.config.ts"]
 }
