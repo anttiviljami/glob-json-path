@@ -1,6 +1,4 @@
-import globToRegExp from "glob-to-regexp";
-
-// import { globToRegExp } from './deno-glob';
+import * as minimatch from "minimatch";
 
 export function globPaths(globPattern: string, obj: any): string[] {
   return glob(globPattern, obj, "path");
@@ -58,22 +56,23 @@ export function glob(globPattern: string, obj: any, mode: "path" | "value"): any
 }
 
 const objectPathMatches = (matcher: PathMatcher, pathParts: string[]) => {
+  // use precheck if available to skip unnecessary regex checks
   if (matcher.precheck && !matcher.precheck(pathParts)) {
     return false;
   }
 
-  const path = pathParts.join("/");
+  const path = pathParts.join(".");
 
-  return matcher.check.test(path);
+  return typeof matcher.check !== "boolean" ? matcher.check.test(path) : false;
 };
 
 interface PathMatcher {
-  check: RegExp;
+  check: minimatch.MMRegExp | false;
   precheck?: (pathParts: string[]) => boolean;
   globParts: string[];
 }
 const toPathMatcher = (globParts: string[]): PathMatcher => {
-  const pathGlob = globParts.join("/");
+  const pathGlob = globParts.join(".");
 
   // optimization: check if last glob part is a primitive value and add a precheck
   let precheck: PathMatcher["precheck"];
@@ -85,7 +84,7 @@ const toPathMatcher = (globParts: string[]): PathMatcher => {
   }
 
   return {
-    check: globToRegExp(pathGlob, { extended: true, globstar: true }),
+    check: minimatch.makeRe(pathGlob, { dot: true, noglobstar: false }),
     globParts,
     precheck,
   };
