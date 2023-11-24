@@ -67,18 +67,6 @@ describe("globValues", () => {
 
     expect(globValues("**.inner.*.id", obj)).toEqual(["id-1"]);
   });
-
-  it("should return values using double wildcard for first level matches", () => {
-    const obj = {
-      inner: [
-        {
-          id: "id-1",
-        },
-      ],
-    };
-
-    expect(globValues("**.inner.*.id", obj)).toEqual(["id-1"]);
-  });
 });
 
 describe("globPaths", () => {

@@ -1,6 +1,4 @@
-import globToRegExp from "glob-to-regexp";
-
-// import { globToRegExp } from './deno-glob';
+import * as minimatch from "minimatch";
 
 export function globPaths(globPattern: string, obj: any): string[] {
   return glob(globPattern, obj, "path");
@@ -11,41 +9,42 @@ export function globValues(globPattern: string, obj: any): any[] {
 }
 
 export function glob(globPattern: string, obj: any, mode: "path" | "value"): any[] {
-  const objectPatchMatcher = toPathRegex(globPattern);
+  const globPatternParts = globPattern.split(".");
+  const objectPatchMatcher = toPathMatcher(globPatternParts);
+
+  // cache partial matchers by depth
   const globByDepth = new Map();
 
   const result: any[] = [];
 
+  // check for glob star depth
+  const globStarDepth = globPatternParts.indexOf("**");
+
   function traverse(obj: any, path: string[]) {
     if (!obj) return result;
 
-    for (const key of Object.keys(obj)) {
-      const currentPath = [...path, key];
-      const value = obj[key];
+    for (const key in obj) {
+      const currentPath = path.concat(key);
+
       if (objectPathMatches(objectPatchMatcher, currentPath)) {
-        result.push(mode === "path" ? currentPath.join(".") : value);
-      } else if (typeof value === "object" && value !== null) {
-        if (globPattern.includes("**")) {
-          // if the glob pattern contains the globstar **, we need to traverse all the way down
-          traverse(value, currentPath);
+        result.push(mode === "path" ? currentPath.join(".") : obj[key]);
+      } else if (typeof obj[key] === "object" && obj[key] !== null) {
+        // if the glob pattern contains the globstar **, we need to traverse all the way down from here
+        if (globStarDepth !== -1 && currentPath.length >= globStarDepth) {
+          traverse(obj[key], currentPath);
           continue;
         }
 
         // don't traverse if the path doesn't match partially
         let partialMatcher = globByDepth.get(path.length);
         if (!partialMatcher) {
-          partialMatcher = toPathRegex(
-            globPattern
-              .split(".")
-              .slice(0, path.length + 1)
-              .join(".")
-          );
+          partialMatcher = toPathMatcher(globPatternParts.slice(0, currentPath.length));
           globByDepth.set(path.length, partialMatcher);
         }
-        const isPartialMatch = partialMatcher.test(currentPath.join("/"));
+        const isPartialMatch = objectPathMatches(partialMatcher, currentPath);
 
         if (isPartialMatch) {
-          traverse(value, currentPath);
+          traverse(obj[key], currentPath);
         }
       }
     }
@@ -56,14 +55,37 @@ export function glob(globPattern: string, obj: any, mode: "path" | "value"): any
   return result;
 }
 
-const objectPathMatches = (pathGlob: RegExp, paths: string[]) => {
-  const path = paths.join("/");
+const objectPathMatches = (matcher: PathMatcher, pathParts: string[]) => {
+  // use precheck if available to skip unnecessary regex checks
+  if (matcher.precheck && !matcher.precheck(pathParts)) {
+    return false;
+  }
 
-  return pathGlob.test(path);
+  const path = pathParts.join(".");
+
+  return typeof matcher.check !== "boolean" ? matcher.check.test(path) : false;
 };
 
-const toPathRegex = (glob: string) => {
-  const pathGlob = glob.split(".").join("/"); // replace all dots with slashes
+interface PathMatcher {
+  check: minimatch.MMRegExp | false;
+  precheck?: (pathParts: string[]) => boolean;
+  globParts: string[];
+}
+const toPathMatcher = (globParts: string[]): PathMatcher => {
+  const pathGlob = globParts.join(".");
 
-  return globToRegExp(pathGlob, { extended: true, globstar: true });
+  // optimization: check if last glob part is a primitive value and add a precheck
+  let precheck: PathMatcher["precheck"];
+
+  const lastGlobPart = globParts[globParts.length - 1];
+  const lastGlobPartIsPrimitive = !lastGlobPart.includes("*") && !lastGlobPart.includes("?");
+  if (lastGlobPartIsPrimitive) {
+    precheck = (pathParts: string[]) => pathParts[pathParts.length - 1] === lastGlobPart;
+  }
+
+  return {
+    check: minimatch.makeRe(pathGlob, { dot: true, noglobstar: false }),
+    globParts,
+    precheck,
+  };
 };
