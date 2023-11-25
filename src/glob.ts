@@ -39,12 +39,13 @@ export function glob(globPattern: string, obj: any, mode: "path" | "value"): any
     for (const key in obj) {
       const currentPath = path ? path + "." + key : key;
 
-      // optimization: 
-      const matchIsPossible = globStarDepth === -1 ?
-        // with no globstar: we must be at the end of the glob pattern
-        depth === globPatternParts.length - 1 :
-        // with globstar: depth must be greater than or equal to globstar depth
-        depth >= globStarDepth;
+      // optimization:
+      const matchIsPossible =
+        globStarDepth === -1
+          ? // with no globstar: we must be at the end of the glob pattern
+            depth === globPatternParts.length - 1
+          : // with globstar: depth must be greater than or equal to globstar depth
+            depth >= globStarDepth;
 
       if (matchIsPossible && objectPathMatches(objectPatchMatcher, currentPath)) {
         result.push(mode === "path" ? currentPath : obj[key]);
