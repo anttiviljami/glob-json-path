@@ -24,7 +24,7 @@ export function glob(globPattern: string, obj: any, mode: "path" | "value"): any
   // store the matcher for the full length glob pattern
   let objectPatchMatcher: PathMatcher = depthMatchers.get(globPatternParts.length);
   if (!objectPatchMatcher) {
-    objectPatchMatcher = toPathMatcher(globPatternParts);
+    objectPatchMatcher = buildPathMatcher(globPatternParts);
     depthMatchers.set(globPatternParts.length, objectPatchMatcher);
   }
 
@@ -39,7 +39,14 @@ export function glob(globPattern: string, obj: any, mode: "path" | "value"): any
     for (const key in obj) {
       const currentPath = path ? path + "." + key : key;
 
-      if (objectPathMatches(objectPatchMatcher, currentPath)) {
+      // optimization: 
+      const matchIsPossible = globStarDepth === -1 ?
+        // with no globstart: we must be at the end of the glob pattern
+        depth === globPatternParts.length - 1 :
+        // with globstar: depth must be greater than or equal to globstar depth
+        depth >= globStarDepth;
+
+      if (matchIsPossible && objectPathMatches(objectPatchMatcher, currentPath)) {
         result.push(mode === "path" ? currentPath : obj[key]);
       } else if (typeof obj[key] === "object" && obj[key] !== null) {
         // if the glob pattern contains the globstar **, we need to traverse all the way down from here
@@ -51,7 +58,7 @@ export function glob(globPattern: string, obj: any, mode: "path" | "value"): any
         // don't traverse if the path doesn't match partially
         let partialMatcher = depthMatchers.get(Math.min(depth, globPatternParts.length));
         if (!partialMatcher) {
-          partialMatcher = toPathMatcher(globPatternParts.slice(0, depth + 1));
+          partialMatcher = buildPathMatcher(globPatternParts.slice(0, depth + 1));
           depthMatchers.set(depth, partialMatcher);
         }
         const isPartialMatch = objectPathMatches(partialMatcher, currentPath);
@@ -82,13 +89,14 @@ interface PathMatcher {
   precheck?: (path: string) => boolean;
   globParts: string[];
 }
-const toPathMatcher = (globParts: string[]): PathMatcher => {
+const buildPathMatcher = (globParts: string[]): PathMatcher => {
   const pathGlob = globParts.join(".");
 
   // optimization: check if last glob part is a primitive value and add a precheck
   let precheck: PathMatcher["precheck"];
 
   const lastGlobPart = globParts[globParts.length - 1];
+
   const lastGlobPartIsPrimitive = !lastGlobPart.includes("*") && !lastGlobPart.includes("?");
   if (lastGlobPartIsPrimitive) {
     precheck = (path: string) => path.endsWith(lastGlobPart);
