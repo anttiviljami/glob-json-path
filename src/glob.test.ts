@@ -109,3 +109,21 @@ describe("globPaths", () => {
     expect(globPaths("**.ba", obj)).toEqual([]);
   });
 });
+
+describe("safe mode", () => {
+  it("globValues should not blow up on circular references", () => {
+    const obj: any = { a: 1 };
+    obj.b = obj;
+
+    expect(globValues("**.a", obj, { safeMode: true })).toEqual([1]);
+    expect(globValues("**.b", obj, { safeMode: true })).toEqual([obj]);
+  });
+
+  it("globPaths should not blow up on circular references", () => {
+    const obj: any = { a: 1 };
+    obj.b = obj;
+
+    expect(globPaths("**.a", obj, { safeMode: true })).toEqual(["b.a"]);
+    expect(globPaths("**.b", obj, { safeMode: true })).toEqual(["b.b"]);
+  })
+});

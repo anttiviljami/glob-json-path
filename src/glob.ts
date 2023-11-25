@@ -1,17 +1,75 @@
 import * as minimatch from "minimatch";
 
-export function globPaths(globPattern: string, obj: any): string[] {
-  return glob(globPattern, obj, "path");
+export interface GlobOptions {
+  /**
+   * Safe mode is slower but prevents infinite recursions on circular references
+   *
+   * @default false
+   */
+  safeMode?: boolean;
 }
 
-export function globValues(globPattern: string, obj: any): any[] {
-  return glob(globPattern, obj, "value");
+/**
+ * Glob for matching dot-notated paths in an object
+ */
+export function globPaths(
+  /**
+   * The glob pattern to use for matching
+   */
+  globPattern: string,
+  /**
+   * The object to search for matches
+   */
+  obj: any,
+  /**
+   * Additional options for globbing
+   */
+  opts: GlobOptions = {}
+): string[] {
+  return glob(globPattern, obj, "path", opts);
 }
 
-// cache matchers by glob pattern
-const globCache = new Map();
+/**
+ * Glob for matching values in an object
+ */
+export function globValues(
+  /**
+   * The glob pattern to use for matching
+   */
+  globPattern: string,
+  /**
+   * The object to search for matches
+   */
+  obj: any,
+  /**
+   * Additional options for globbing
+   */
+  opts: GlobOptions = {}
+): any[] {
+  return glob(globPattern, obj, "value", opts);
+}
 
-export function glob(globPattern: string, obj: any, mode: "path" | "value"): any[] {
+/**
+ * Glob for matching paths or values in an object
+ */
+export function glob(
+  /**
+   * The glob pattern to use for matching
+   */
+  globPattern: string,
+  /**
+   * The object to search for matches
+   */
+  obj: any,
+  /**
+   * Whether to return the matched paths or values
+   */
+  mode: "path" | "value",
+  /**
+   * Additional options for globbing
+   */
+  opts: GlobOptions = {}
+): any[] {
   const globPatternParts = globPattern.split(".");
 
   // cache partial matchers by depth
@@ -28,7 +86,11 @@ export function glob(globPattern: string, obj: any, mode: "path" | "value"): any
     depthMatchers.set(globPatternParts.length, objectPatchMatcher);
   }
 
+  // accumulate results
   const result: any[] = [];
+
+  // safe mode: track visited nodes to avoid infinite recursion
+  const visitedNodes = opts.safeMode ? new WeakSet() : null;
 
   // check for glob star depth
   const globStarDepth = globPatternParts.indexOf("**");
@@ -50,6 +112,10 @@ export function glob(globPattern: string, obj: any, mode: "path" | "value"): any
       if (matchIsPossible && objectPathMatches(objectPatchMatcher, currentPath)) {
         result.push(mode === "path" ? currentPath : obj[key]);
       } else if (typeof obj[key] === "object" && obj[key] !== null) {
+        // avoid infinite recursion
+        if (opts.safeMode && visitedNodes!.has(obj)) return;
+        opts.safeMode && visitedNodes!.add(obj);
+
         // if the glob pattern contains the globstar **, we need to traverse all the way down from here
         if (globStarDepth !== -1 && depth >= globStarDepth) {
           traverse(obj[key], currentPath, depth + 1);
@@ -109,3 +175,6 @@ const buildPathMatcher = (globParts: string[]): PathMatcher => {
     precheck,
   };
 };
+
+// cache matchers by glob pattern
+const globCache = new Map();
