@@ -21,7 +21,7 @@ for (let i = 0; i < 1000; i++) {
 
 let result = null;
 
-console.time('simple')
+console.time('simple x 10k')
 performance.mark('start-simple')
 
 for (let i = 0; i < 10_000; i++) {
@@ -29,11 +29,11 @@ for (let i = 0; i < 10_000; i++) {
 }
 
 performance.mark('end-simple')
-console.timeEnd('simple')
+console.timeEnd('simple x 10k')
 
 assert.deepEqual(result, [0])
 
-console.time('wildcard')
+console.time('wildcard x 10k')
 performance.mark('start-wildcard')
 
 for (let i = 0; i < 10_000; i++) {
@@ -41,14 +41,14 @@ for (let i = 0; i < 10_000; i++) {
 }
 
 performance.mark('end-wildcard')
-console.timeEnd('wildcard')
+console.timeEnd('wildcard x 10k')
 
 assert.equal(result[0], 'prop0.value')
 assert.equal(result[1], 'prop1.value')
 assert.equal(result[2], 'prop2.value')
 assert.equal(result[999], 'prop999.value')
 
-console.time('globstar')
+console.time('globstar x 100')
 performance.mark('start-globstar')
 
 for (let i = 0; i < 100; i++) {
@@ -56,7 +56,7 @@ for (let i = 0; i < 100; i++) {
 }
 
 performance.mark('end-globstar')
-console.timeEnd('globstar')
+console.timeEnd('globstar x 100')
 
 assert.ok(result.includes('prop0.nested0.nested1.value1'))
 assert.ok(result.includes('prop1.nested0.nested1.value1'))
