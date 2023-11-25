@@ -125,5 +125,5 @@ describe("safe mode", () => {
 
     expect(globPaths("**.a", obj, { safeMode: true })).toEqual(["b.a"]);
     expect(globPaths("**.b", obj, { safeMode: true })).toEqual(["b.b"]);
-  })
+  });
 });
