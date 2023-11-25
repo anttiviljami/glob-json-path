@@ -8,67 +8,78 @@ export function globValues(globPattern: string, obj: any): any[] {
   return glob(globPattern, obj, "value");
 }
 
+// cache matchers by glob pattern
+const globCache = new Map();
+
 export function glob(globPattern: string, obj: any, mode: "path" | "value"): any[] {
   const globPatternParts = globPattern.split(".");
-  const objectPatchMatcher = toPathMatcher(globPatternParts);
 
   // cache partial matchers by depth
-  const globByDepth = new Map();
+  let depthMatchers = globCache.get(globPattern);
+  if (!depthMatchers) {
+    depthMatchers = new Map();
+    globCache.set(globPattern, depthMatchers);
+  }
+
+  // store the matcher for the full length glob pattern
+  let objectPatchMatcher: PathMatcher = depthMatchers.get(globPatternParts.length);
+  if (!objectPatchMatcher) {
+    objectPatchMatcher = toPathMatcher(globPatternParts);
+    depthMatchers.set(globPatternParts.length, objectPatchMatcher);
+  }
 
   const result: any[] = [];
 
   // check for glob star depth
   const globStarDepth = globPatternParts.indexOf("**");
 
-  function traverse(obj: any, path: string[]) {
+  function traverse(obj: any, path: string, depth: number) {
     if (!obj) return result;
 
     for (const key in obj) {
-      const currentPath = path.concat(key);
+      const currentPath = path ? path + "." + key : key;
 
       if (objectPathMatches(objectPatchMatcher, currentPath)) {
-        result.push(mode === "path" ? currentPath.join(".") : obj[key]);
+        result.push(mode === "path" ? currentPath : obj[key]);
       } else if (typeof obj[key] === "object" && obj[key] !== null) {
         // if the glob pattern contains the globstar **, we need to traverse all the way down from here
-        if (globStarDepth !== -1 && currentPath.length >= globStarDepth) {
-          traverse(obj[key], currentPath);
+        if (globStarDepth !== -1 && depth >= globStarDepth) {
+          traverse(obj[key], currentPath, depth + 1);
           continue;
         }
 
         // don't traverse if the path doesn't match partially
-        let partialMatcher = globByDepth.get(path.length);
+        let partialMatcher = depthMatchers.get(Math.min(depth, globPatternParts.length));
         if (!partialMatcher) {
-          partialMatcher = toPathMatcher(globPatternParts.slice(0, currentPath.length));
-          globByDepth.set(path.length, partialMatcher);
+          partialMatcher = toPathMatcher(globPatternParts.slice(0, depth + 1));
+          depthMatchers.set(depth, partialMatcher);
         }
         const isPartialMatch = objectPathMatches(partialMatcher, currentPath);
 
         if (isPartialMatch) {
-          traverse(obj[key], currentPath);
+          traverse(obj[key], currentPath, depth + 1);
         }
       }
     }
   }
 
-  traverse(obj, []);
+  traverse(obj, "", 0);
 
   return result;
 }
 
-const objectPathMatches = (matcher: PathMatcher, pathParts: string[]) => {
+const objectPathMatches = (matcher: PathMatcher, path: string) => {
   // use precheck if available to skip unnecessary regex checks
-  if (matcher.precheck && !matcher.precheck(pathParts)) {
+  if (matcher.precheck && !matcher.precheck(path)) {
     return false;
   }
-
-  const path = pathParts.join(".");
 
   return typeof matcher.check !== "boolean" ? matcher.check.test(path) : false;
 };
 
 interface PathMatcher {
   check: minimatch.MMRegExp | false;
-  precheck?: (pathParts: string[]) => boolean;
+  precheck?: (path: string) => boolean;
   globParts: string[];
 }
 const toPathMatcher = (globParts: string[]): PathMatcher => {
@@ -80,7 +91,7 @@ const toPathMatcher = (globParts: string[]): PathMatcher => {
   const lastGlobPart = globParts[globParts.length - 1];
   const lastGlobPartIsPrimitive = !lastGlobPart.includes("*") && !lastGlobPart.includes("?");
   if (lastGlobPartIsPrimitive) {
-    precheck = (pathParts: string[]) => pathParts[pathParts.length - 1] === lastGlobPart;
+    precheck = (path: string) => path.endsWith(lastGlobPart);
   }
 
   return {

@@ -7,6 +7,9 @@ describe("globValues", () => {
     expect(globValues("c", { a: 1, b: true, c: "3", d: [1, 2], f: { a: "b" } })).toEqual(["3"]);
     expect(globValues("d", { a: 1, b: true, c: "3", d: [1, 2], f: { a: "b" } })).toEqual([[1, 2]]);
     expect(globValues("f", { a: 1, b: true, c: "3", d: [1, 2], f: { a: "b" } })).toEqual([{ a: "b" }]);
+
+    // benchmark case
+    expect(globValues("prop0.nested0.value0", { prop0: { nested0: { value0: 0 } } })).toEqual([0]);
   });
 
   it("should return matched values in an array by index", () => {
